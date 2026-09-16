@@ -3,182 +3,543 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Francesco Giordani - Personal Website</title>
+<title>Francesco Giordani</title>
+<meta name="description" content="Francesco Giordani, MSc student in Artificial Intelligence at the University of Bologna. Optimization, search and machine learning." />
+<script>
+  /* runs before first paint so the theme never flashes */
+  try {
+    var t = localStorage.getItem('theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* Reset some default styles */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  :root {
+    --bg: #faf7f0;
+    --bg-elev: #ffffff;
+    --ink: #16233a;
+    --ink-soft: #55637d;
+    --ink-faint: #8b97ad;
+    --accent: #1e4fa3;
+    --accent-soft: #e6edf9;
+    --line: #e2dcd0;
+    --shadow: 0 1px 2px rgba(22,35,58,.05), 0 8px 24px -12px rgba(22,35,58,.18);
+    --radius: 14px;
+    --serif: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1420;
+      --bg-elev: #161d2c;
+      --ink: #e8ecf4;
+      --ink-soft: #9fadc4;
+      --ink-faint: #6b7a93;
+      --accent: #7aa6f0;
+      --accent-soft: #1c2942;
+      --line: #263143;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1420;
+    --bg-elev: #161d2c;
+    --ink: #e8ecf4;
+    --ink-soft: #9fadc4;
+    --ink-faint: #6b7a93;
+    --accent: #7aa6f0;
+    --accent-soft: #1c2942;
+    --line: #263143;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
   body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    line-height: 1.6;
-    background: #f3e4c1; /* creamy off-white */
-    color: #001f4d; /* deep blue */
-    scroll-behavior: smooth;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
   }
+
+  a { color: var(--accent); }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding-inline: 24px;
+  }
+
+  /* ---------- header ---------- */
   header {
-    background-color: #003366;
-    padding: 1rem 2rem;
     position: sticky;
     top: 0;
-    z-index: 1000;
-    border-bottom: 2px solid  #f9f4e8; 
+    z-index: 50;
+    background: color-mix(in srgb, var(--bg) 86%, transparent);
+    backdrop-filter: saturate(160%) blur(12px);
+    border-bottom: 1px solid var(--line);
   }
-
+  header .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 14px;
+  }
+  .brand {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.02rem;
+    letter-spacing: -.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
   nav {
     display: flex;
-    justify-content: center;
-    gap: 2rem;
+    align-items: center;
+    gap: 22px;
   }
-
-  section {
-    max-width: 900px;
-    margin: 4rem auto;
-    padding: 0 1rem;
-  }
-  h1, h2 {
-    margin-bottom: 1rem;
-    color: #003366; /* a darker deep blue for headings */
-  }
-
-  p {
-    margin-bottom: 1.5rem;
-  }
-  #about img {
-    max-width: 150px;
-    display: block;
-    margin-bottom: 1rem;
-  }
-  
-  .projects > div {
-    background: #dce6f1; /* light blue background for project boxes */
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    transition: transform 0.2s;
-    color: #001f4d;
-  }
-  .projects > div:hover {
-    transform: scale(1.03);
-    background: #003366;
-    color: #f9f4e8;
-  }
-
   nav a {
-    color: #ffffff;
+    font-size: .875rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-decoration: none;
+    transition: color .15s;
   }
-  nav a:hover {
-    color: #25478b;
+  nav a:hover { color: var(--ink); }
+
+  .theme-toggle {
+    border: 1px solid var(--line);
+    background: var(--bg-elev);
+    color: var(--ink-soft);
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: grid; place-items: center;
+    font-size: .9rem;
+    line-height: 1;
+    transition: color .15s, border-color .15s;
+  }
+  .theme-toggle:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  /* ---------- intro ---------- */
+  .intro {
+    padding-block: 72px 56px;
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .intro img {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .intro h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(2rem, 6vw, 2.7rem);
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    margin-bottom: 10px;
+  }
+  .intro .role {
+    color: var(--ink-soft);
+    font-size: 1.02rem;
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+  .intro p { color: var(--ink-soft); max-width: 56ch; }
+  .intro p + p { margin-top: 10px; }
+
+
+  /* ---------- section heading ---------- */
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 8px;
+    margin-bottom: 34px;
+  }
+  .section-head h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: -.01em;
+  }
+  .section-head span {
+    font-family: var(--mono);
+    font-size: .72rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* ---------- timeline ---------- */
+  .timeline {
+    position: relative;
+    padding-bottom: 72px;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    top: 6px;
+    bottom: 40px;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--line), var(--line) 85%, transparent);
+  }
+
+  .event {
+    position: relative;
+    padding-left: 52px;
+    padding-bottom: 34px;
+  }
+  .event::before {
+    content: "";
+    position: absolute;
+    left: 10px; top: 8px;
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--ink-faint);
+    transition: border-color .2s, background .2s;
+  }
+  .event.now::before {
+    border-color: var(--accent);
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+  .event:hover::before { border-color: var(--accent); }
+
+  .event .logo {
+    position: absolute;
+    left: 0; top: 1px;
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 4px;
+    object-fit: contain;
+    box-shadow: var(--shadow);
+  }
+  .event.has-logo::before { display: none; }
+
+  .event .date {
+    font-family: var(--mono);
+    font-size: .74rem;
+    letter-spacing: .04em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .badge {
+    font-family: var(--sans);
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+
+  .event h3 {
+    font-size: 1.06rem;
+    font-weight: 600;
+    letter-spacing: -.01em;
+    margin-bottom: 5px;
+  }
+  .event h3 a { text-decoration: none; color: inherit; }
+  .event h3 a:hover { color: var(--accent); }
+
+  .event p {
+    color: var(--ink-soft);
+    font-size: .94rem;
+  }
+  .meta {
+    margin-top: 8px;
+    font-size: .82rem;
+    color: var(--ink-faint);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+  }
+  .meta a { text-decoration: none; font-weight: 500; }
+  .meta a:hover { text-decoration: underline; }
+
+
+  .timeline-end {
+    position: relative;
+    padding-left: 52px;
+    font-size: .82rem;
+    font-family: var(--mono);
+    color: var(--ink-faint);
+  }
+  .timeline-end::before {
+    content: "";
+    position: absolute;
+    left: 12px; top: 9px;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--line);
+  }
+
+  /* ---------- contact ---------- */
+  #contact { padding-bottom: 72px; }
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .contact-grid a {
+    display: block;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    text-decoration: none;
+    transition: border-color .15s, transform .15s, box-shadow .15s;
+  }
+  .contact-grid a:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .contact-grid .label {
+    font-family: var(--mono);
+    font-size: .7rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 3px;
+  }
+  .contact-grid .value {
+    color: var(--ink);
+    font-size: .92rem;
+    font-weight: 500;
+    word-break: break-word;
   }
 
   footer {
-    text-align: center;
-    padding: 2rem 1rem;
-    background-color: #003366;
-    color: #f9f4e8;
-    font-size: 0.9rem;
+    border-top: 1px solid var(--line);
+    color: var(--ink-faint);
+    font-size: .8rem;
   }
-  a.contact-link {
-    color: #00bcd4;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  a.contact-link:hover {
-    text-decoration: underline;
+  footer .wrap {
+    padding-block: 26px 40px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
-  @media (max-width: 600px) {
-    nav {
-      flex-direction: column;
-      gap: 1rem;
+  @media (max-width: 620px) {
+    .intro {
+      grid-template-columns: 1fr;
+      gap: 20px;
+      padding-block: 48px 40px;
     }
-    ul.skills {
-      justify-content: center;
-    }
+    nav { gap: 16px; }
+    nav a:not(.nav-key) { display: none; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <nav>
-    <a href="#about">About</a>
-    <a href="#projects">Projects</a>
-    <a href="#contact">Contact</a>
-  </nav>
+  <div class="wrap">
+    <a class="brand" href="#top">Francesco Giordani</a>
+    <nav>
+      <a href="#timeline" class="nav-key">Timeline</a>
+      <a href="#contact" class="nav-key">Contact</a>
+      <a href="phd.html" class="nav-key">PhD</a>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle colour theme">◐</button>
+    </nav>
+  </div>
 </header>
 
-<section id="about">
-  <img src="profile_pic.jpeg" alt="Francesco Giordani photo" />
-  <h1>Francesco Giordani</h1>
-  <p>Masters student at University of Bologna in Artificial Intelligence. Passioned about everything is rational, as not AI.</p>
-  <br>
-  <p>I'm also a proud <a href="https://www.elicsir.it/en/orthogonal-school" target="_blank" rel="noopener"> Orthogonal School</a> student.</p>
-</section>
+<main id="top">
 
+  <section class="wrap intro">
+    <img src="profile_pic.jpeg" alt="Francesco Giordani" />
+    <div>
+      <h1>Francesco Giordani</h1>
+      <p class="role">MSc student in Artificial Intelligence @ University of Bologna<br />Graduate Research Intern @ Cornell University</p>
+      <p>Passionate about everything rational, AI included.</p>
+      <p>Also a proud student at the <a href="https://www.elicsir.it/en/orthogonal-school" target="_blank" rel="noopener">Orthogonal School</a>.</p>
+      <p>Applying to CS PhD programs in autumn 2026, for Fall 2027 entry. My <a href="phd.html">deadlines, funding and requirements</a> are public.</p>
+    </div>
+  </section>
 
+  <section class="wrap" id="timeline">
+    <div class="section-head">
+      <h2>Timeline</h2>
+      <span>newest first ↓</span>
+    </div>
 
-<section id="projects">
+    <div class="timeline">
 
-  <h2>Projects</h2>
+      <article class="event has-logo now">
+        <img class="logo" src="assets/logo-cornell.png" alt="Cornell University" title="Cornell University" />
+        <div class="date">Aug 2026 - present <span class="badge">ONGOING</span></div>
+        <h3>Graduate Research Intern @ Cornell University</h3>
+        <p>Research visit in the Department of Computer Science.</p>
+        <div class="meta"><span>Supervised by Prof. Karthik Sridharan</span></div>
+      </article>
 
-  <div>
-    <h3>Approximate K-Nearest Neighbors Search <span style="font-weight:400; font-size:0.95em;">(Work in progress)</span></h3>
-    <p>Optimizing search efficiency by reducing computation time and the number of examined points through statistical and machine learning methods. Supervised by Prof. Ceccarello.<br>
-    <em>Oct 2025 – Present</em>
-    </p>
-  </div>
-  
-  <div>
-    <h3>Home Healthcare Routing and Scheduling Problem <span style="font-weight:400; font-size:0.95em;">(Work in progress)</span></h3>
-    <p>Improving state-of-the-art formulations using constraint programming, mixed integer programming, and foundation models. Supervised by Prof. Maniezzo.<br>
-    <em>Oct 2025 – Present</em>
-    </p>
-  </div>
-  
-  <div>
-    <h3>Hive AI Engine</h3>
-    <p>Developed two AI agents for the Hive board game using negamax with parallelism and MCTS with a GNN for policy and value prediction. Supervised by Dr. Norelli and Dr. Frigo.<br>
-    <em>Oct 2024 – Aug 2025</em>
-    </p>
-  </div>
+      <article class="event has-logo now">
+        <img class="logo" src="assets/logo-elicsir.png" alt="Elicsir Foundation" title="Elicsir Foundation" />
+        <div class="date">Oct 2025 - present <span class="badge">ONGOING</span></div>
+        <h3>Approximate K-Nearest Neighbors Search</h3>
+        <p>Optimizing search efficiency by reducing computation time and the number of examined points through statistical and machine learning methods.</p>
+        <div class="meta"><span>Supervised by Prof. Ceccarello</span></div>
+      </article>
 
-  <div>
-    <h3>The SAT Story: from Aristotle to SAT Solvers</h3>
-    <p>Talk and article on the story of SATisfiability
-      <a href="The_SAT_Story_from_Aristotle_to_SAT_Solvers.pdf" target="_blank" rel="noopener"> (pdf)</a>
-      <br>
-      <em>Oct 2024 – Aug 2025</em>
-    </p>
-  </div>
-  
-  <div>
-    <h3>Tablut AI Agent</h3>
-    <p>Implemented an AI to play the Scandinavian board game Tablut using a Minimax-based heuristic approach.<br>
-    <em>Sep 2024 – Dec 2024</em>
-    </p>
-  </div>
-  
-  <div>
-    <h3>Analysis and Forecasting of Vehicular Traffic</h3>
-    <p>Processed traffic data using statistical estimation and machine learning regression techniques to generate geomaps. Bachelor thesis supervised by Prof. Bellavista.<br>
-    <em>Mar 2024 – Jul 2024</em>
-    </p>
-  </div>
+      <article class="event has-logo now">
+        <img class="logo" src="assets/logo-elicsir.png" alt="Elicsir Foundation" title="Elicsir Foundation" />
+        <div class="date">Oct 2025 - present <span class="badge">ONGOING</span></div>
+        <h3>Home Healthcare Routing and Scheduling Problem</h3>
+        <p>Improving state-of-the-art formulations using constraint programming, mixed integer programming, and foundation models.</p>
+        <div class="meta"><span>Supervised by Prof. Maniezzo</span></div>
+      </article>
 
-</section>
+      <article class="event has-logo">
+        <img class="logo" src="assets/logo-unibo.png" alt="University of Bologna" title="University of Bologna" />
+        <div class="date">A.Y. 2024/25 - 2025/26</div>
+        <h3>Teaching Assistant @ University of Bologna</h3>
+        <p>Teaching tutor for two consecutive academic years in Fondamenti di Informatica, Management Engineering.</p>
+        <div class="meta"><span>With Prof. Wilma Penzo</span></div>
+      </article>
 
-<section id="contact">
-  <h2>Contact</h2>
-  <p>Email: <a href="francesco.giordani@studio.unibo.it" class="contact-link">francesco.giordani@studio.unibo.it</a></p>
-  <p>GitHub: <a href="https://github.com/KNGLJordan" target="_blank" rel="noopener" class="contact-link">github.com/KNGLJordan</a></p>
-</section>
+      <article class="event has-logo">
+        <img class="logo" src="assets/logo-elicsir.png" alt="Elicsir Foundation" title="Elicsir Foundation" />
+        <div class="date">Oct 2024 - Aug 2025</div>
+        <h3>Hive AI Engine</h3>
+        <p>Two AI agents for the Hive board game: negamax with parallelism, and MCTS with a graph neural network for policy and value prediction.</p>
+        <div class="meta"><span>Supervised by Dr. Norelli and Dr. Frigo</span></div>
+      </article>
+
+      <article class="event has-logo">
+        <img class="logo" src="assets/logo-elicsir.png" alt="Elicsir Foundation" title="Elicsir Foundation" />
+        <div class="date">Oct 2024 - Aug 2025</div>
+        <h3><a href="The_SAT_Story_from_Aristotle_to_SAT_Solvers.pdf" target="_blank" rel="noopener">The SAT Story: from Aristotle to SAT Solvers</a></h3>
+        <p>A talk and an article tracing the history of satisfiability, from ancient logic to modern SAT solvers.</p>
+        <div class="meta"><span>Supervised by Prof. Zeynep Kiziltan</span><a href="The_SAT_Story_from_Aristotle_to_SAT_Solvers.pdf" target="_blank" rel="noopener">Read the PDF →</a></div>
+      </article>
+
+      <article class="event has-logo">
+        <img class="logo" src="assets/logo-unibo.png" alt="University of Bologna" title="University of Bologna" />
+        <div class="date">Sep 2024 - Dec 2024</div>
+        <h3>Tablut AI Agent</h3>
+        <p>An AI playing the Scandinavian board game Tablut, built on a Minimax-based heuristic approach.</p>
+      </article>
+
+      <article class="event has-logo">
+        <img class="logo" src="assets/logo-unibo.png" alt="University of Bologna" title="University of Bologna" />
+        <div class="date">Mar 2024 - Jul 2024</div>
+        <h3>Analysis and Forecasting of Vehicular Traffic</h3>
+        <p>Processed traffic data with statistical estimation and machine learning regression to generate geomaps. Bachelor thesis.</p>
+        <div class="meta"><span>Supervised by Prof. Bellavista</span></div>
+      </article>
+
+      <div class="timeline-end">earlier · the story starts here</div>
+
+    </div>
+  </section>
+
+  <section class="wrap" id="contact">
+    <div class="section-head">
+      <h2>Contact</h2>
+      <span>say hello</span>
+    </div>
+    <div class="contact-grid">
+      <a href="mailto:francesco.giordani5@studio.unibo.it">
+        <span class="label">Student · Bologna</span>
+        <span class="value">francesco.giordani5@studio.unibo.it</span>
+      </a>
+      <a href="mailto:francesco.giordani8@unibo.it">
+        <span class="label">Teaching Assistant · Bologna</span>
+        <span class="value">francesco.giordani8@unibo.it</span>
+      </a>
+      <a href="mailto:fg342@cornell.edu">
+        <span class="label">Research · Cornell</span>
+        <span class="value">fg342@cornell.edu</span>
+      </a>
+      <a href="https://www.linkedin.com/in/francesco-giordani-2b4a262a3/" target="_blank" rel="noopener">
+        <span class="label">LinkedIn</span>
+        <span class="value">francesco-giordani</span>
+      </a>
+      <a href="https://github.com/francescogiordani" target="_blank" rel="noopener">
+        <span class="label">GitHub</span>
+        <span class="value">github.com/francescogiordani</span>
+      </a>
+    </div>
+  </section>
+
+</main>
 
 <footer>
-  &copy; 2025 Your Name. All rights reserved.
+  <div class="wrap">
+    <span>&copy; 2025 Francesco Giordani</span>
+    <span>Bologna, Italy</span>
+  </div>
 </footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    var btn = document.getElementById('themeToggle');
+    try {
+      var saved = localStorage.getItem('theme');
+      if (saved) root.setAttribute('data-theme', saved);
+    } catch (e) {}
+    btn.addEventListener('click', function () {
+      var current = root.getAttribute('data-theme');
+      if (!current) {
+        current = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      var next = current === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('theme', next); } catch (e) {}
+    });
+
+    // reveal timeline events as they scroll into view
+    var events = document.querySelectorAll('.event');
+    if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      events.forEach(function (el) {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(12px)';
+        el.style.transition = 'opacity .5s ease, transform .5s ease';
+      });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'none';
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -8% 0px' });
+      events.forEach(function (el) { io.observe(el); });
+    }
+  })();
+</script>
 
 </body>
 </html>
