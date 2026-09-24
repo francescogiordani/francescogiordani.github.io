@@ -208,6 +208,80 @@
   }
   .controls .count { font-family: var(--mono); font-size: .74rem; color: var(--ink-faint); }
 
+  /* ---------- collapsible notes sections ---------- */
+  .fold { border-top: 1px solid var(--line); }
+  .fold > summary {
+    cursor: pointer; list-style: none;
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 16px; padding-block: 18px;
+  }
+  .fold > summary::-webkit-details-marker { display: none; }
+  .fold > summary h2 {
+    font-family: var(--serif); font-weight: 600; font-size: 1.5rem;
+    letter-spacing: -.01em; display: inline;
+  }
+  .fold > summary span {
+    font-family: var(--mono); font-size: .72rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-faint); white-space: nowrap;
+  }
+  .fold > summary::after {
+    content: "+"; font-family: var(--mono); font-size: 1.1rem; line-height: 1;
+    color: var(--ink-faint); flex: none; margin-left: auto;
+  }
+  .fold[open] > summary::after { content: "\2212"; }
+  .fold > summary:hover h2 { color: var(--accent); }
+  .fold > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .fold .foldbody { padding-bottom: 26px; }
+  .fold .foldbody > *:first-child { margin-top: 0; }
+
+  /* ---------- column glossary and info popovers ---------- */
+  .glossary { padding-block: 14px 16px; }
+  .glossary > summary {
+    cursor: pointer; font-size: .95rem; font-weight: 600; color: var(--ink);
+    list-style-position: outside;
+  }
+  .glossary > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .glossary[open] > summary { margin-bottom: 12px; }
+  .glossary dt {
+    min-width: 150px; font-weight: 600; color: var(--ink);
+    display: flex; align-items: baseline; gap: 7px;
+  }
+  .glossary .scope {
+    font-family: var(--mono); font-size: .58rem; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--ink-faint); font-weight: 500;
+    border: 1px solid var(--line); border-radius: 999px; padding: 1px 6px;
+    white-space: nowrap;
+  }
+  .glossary dd { flex: 1; min-width: 220px; }
+  .glossary-link { font-size: .78rem; text-decoration: none; }
+  .glossary-link:hover { text-decoration: underline; }
+
+  /* the marker sits in the header cell; the bubble itself lives on <body> */
+  .coltip {
+    display: inline-grid; place-items: center; width: 14px; height: 14px;
+    margin-left: 6px; vertical-align: middle; position: relative;
+    border: 1px solid currentColor; border-radius: 999px;
+    font-family: var(--sans); font-size: 9px; font-weight: 600; line-height: 1;
+    text-transform: none; letter-spacing: 0; text-decoration: none;
+    color: var(--ink-faint); opacity: .55;
+  }
+  .coltip::after { content: ""; position: absolute; inset: -7px; }  /* bigger hit target */
+  .cmp thead th:hover .coltip,
+  .coltip:hover, .coltip:focus-visible,
+  .coltip[aria-expanded="true"] { opacity: 1; color: var(--accent); }
+  .coltip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  #coltip {
+    position: fixed; z-index: 100; pointer-events: none;
+    max-width: min(300px, calc(100vw - 24px));
+    background: var(--bg-elev); color: var(--ink-soft);
+    border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow);
+    padding: 9px 12px;
+    font-family: var(--sans); font-size: .8rem; line-height: 1.5; font-weight: 400;
+    text-transform: none; letter-spacing: normal; white-space: normal; text-align: left;
+  }
+  #coltip[hidden] { display: none; }
+
   /* ---------- table ---------- */
   .table-scroll {
     overflow-x: auto; overscroll-behavior-x: contain;
@@ -307,6 +381,7 @@
     .table-scroll { overflow: visible; border: 0; background: none; border-radius: 0; }
     .cmp { min-width: 0; display: block; font-size: .88rem; }
     .cmp thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .coltip { display: none; }
     .cmp tbody, .cmp tr, .cmp td, .cmp th { display: block; width: auto; }
     .cmp tbody tr {
       background: var(--bg-elev); border: 1px solid var(--line);
@@ -326,12 +401,14 @@
   }
 
   @media (max-width: 620px) {
+    .fold > summary span { display: none; }
     nav { gap: 14px; }
     nav a { font-size: .8rem; }
   }
 
   @media print {
-    header, .controls, .notes-toggle, .theme-toggle { display: none; }
+    header, .controls, .notes-toggle, .theme-toggle, .coltip, #coltip { display: none; }
+    .fold > summary::after { content: ""; }
     .table-scroll { overflow: visible; border: 0; }
     .cmp { min-width: 0; font-size: 7pt; }
     .notes-row { display: table-row !important; }
@@ -385,6 +462,70 @@
       <p class="note" style="border-top:0; padding-top:0;">The chip refers to the application call only. Slower-moving columns (housing, insurance, stipend) are governed by the "checked" date on the row.</p>
     </div>
 
+
+    <details class="legend glossary" id="glossary" open>
+      <summary>What the columns mean</summary>
+      <dl>
+        <div class="row" data-col="university">
+          <dt id="gl-university">University</dt>
+          <dd>Which institution the row is about. The chip underneath says whether the row reflects the published Fall 2027 call or the previous cycle.</dd>
+        </div>
+        <div class="row" data-col="program">
+          <dt id="gl-program">Program</dt>
+          <dd>The exact degree you would apply to. One university often runs several relevant programmes with different deadlines, which is why Carnegie Mellon appears twice.</dd>
+        </div>
+        <div class="row" data-col="deadline">
+          <dt id="gl-deadline">Deadline</dt>
+          <dd>The date the application closes, with the local cut-off time where the source states one. The "checked" line underneath is when I last read that page.</dd>
+        </div>
+        <div class="row" data-col="acceptance-rate">
+          <dt id="gl-acceptance-rate">Acceptance rate</dt>
+          <dd>The share of applicants admitted. Mostly empty on purpose: very few departments publish one, and the percentages on ranking sites are undergraduate figures.</dd>
+        </div>
+        <div class="row" data-col="english">
+          <dt id="gl-english">English</dt>
+          <dd>Which English test the programme accepts and the score it asks for, or the scores its admitted students reported.</dd>
+        </div>
+        <div class="row" data-col="housing">
+          <dt id="gl-housing">Housing</dt>
+          <dd>Whether the university offers graduate housing, and whether you apply for it separately from admission.</dd>
+        </div>
+        <div class="row" data-col="health">
+          <dt id="gl-health">Health</dt>
+          <dd>What medical cover a funded student gets, who pays for it, and whether it runs for the whole year.</dd>
+        </div>
+        <div class="row" data-col="links">
+          <dt id="gl-links">Links</dt>
+          <dd>The pages this row was read from, so any value can be checked at its source rather than taken on trust.</dd>
+        </div>
+        <div class="row" data-col="gre">
+          <dt id="gl-gre">GRE<span class="scope">USA only</span></dt>
+          <dd>Whether the general GRE is required, optional, ignored, or not accepted at all for this cycle.</dd>
+        </div>
+        <div class="row" data-col="funding">
+          <dt id="gl-funding">Funding<span class="scope">USA only</span></dt>
+          <dd>Whether admitted PhD students are funded by the department as standard, rather than left to find their own support.</dd>
+        </div>
+        <div class="row" data-col="dental-vision">
+          <dt id="gl-dental-vision">Dental &amp; vision<span class="scope">USA only</span></dt>
+          <dd>Whether dental and vision cover is included in the health plan, offered as a paid add-on, or absent.</dd>
+        </div>
+        <div class="row" data-col="funding-model">
+          <dt id="gl-funding-model">Funding model<span class="scope">Europe only</span></dt>
+          <dd>How the position is paid for: an employment contract with a salary, a scholarship or stipend, or fees you pay yourself.</dd>
+        </div>
+        <div class="row" data-col="pay">
+          <dt id="gl-pay">Pay</dt>
+          <dd>What you are actually paid to live on, over the period the source quotes, which is often 9 or 10 months rather than 12. Whether that arrives as a salary or as a stipend is what the Funding model column says.</dd>
+        </div>
+        <div class="row" data-col="application-fee">
+          <dt id="gl-application-fee">Application fee</dt>
+          <dd>What it costs to submit the application, quoted for an international applicant where the university charges a different amount. Across most of continental Europe it is nothing.</dd>
+        </div>
+      </dl>
+      <p class="note">The two tables share most columns. Anything tagged USA only or Europe only appears in just one of them.</p>
+    </details>
+
     <div class="section-head">
       <h2>USA</h2>
       <span id="usa-count">3 programs</span>
@@ -394,26 +535,26 @@
       <label><input type="checkbox" id="onlyConfirmed" /> Show only rows confirmed for Fall 2027</label>
       <label><input type="search" id="search" placeholder="Filter by university" aria-label="Filter by university" /></label>
       <span class="count" id="usa-shown"></span>
+      <a class="glossary-link" href="#glossary">what the columns mean</a>
     </div>
 
     <div class="table-scroll" tabindex="0" role="region" aria-label="USA programs comparison">
       <table class="cmp" id="usa-table">
         <thead>
           <tr>
-            <th scope="col">University</th>
-            <th scope="col">Program</th>
-            <th scope="col">Deadline</th>
-            <th scope="col">Acceptance rate</th>
-            <th scope="col">Fee</th>
-            <th scope="col">Fee waiver</th>
-            <th scope="col">GRE</th>
-            <th scope="col">English</th>
-            <th scope="col">Funding</th>
-            <th scope="col">Stipend</th>
-            <th scope="col">Housing</th>
-            <th scope="col">Health</th>
-            <th scope="col">Dental &amp; vision</th>
-            <th scope="col">Links</th>
+            <th scope="col" data-col="university">University</th>
+            <th scope="col" data-col="program">Program</th>
+            <th scope="col" data-col="deadline">Deadline</th>
+            <th scope="col" data-col="acceptance-rate">Acceptance rate</th>
+            <th scope="col" data-col="application-fee">Application fee</th>
+            <th scope="col" data-col="gre">GRE</th>
+            <th scope="col" data-col="english">English</th>
+            <th scope="col" data-col="funding">Funding</th>
+            <th scope="col" data-col="pay">Pay</th>
+            <th scope="col" data-col="housing">Housing</th>
+            <th scope="col" data-col="health">Health</th>
+            <th scope="col" data-col="dental-vision">Dental &amp; vision</th>
+            <th scope="col" data-col="links">Links</th>
             <th scope="col"><span class="sr-only">Notes</span></th>
           </tr>
         </thead>
@@ -430,12 +571,11 @@
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://csd.cmu.edu/academics/doctoral/phd-in-computer-science" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline">9 Dec 2026, 15:00 EST</span> <a class="src-link" href="https://csd.cmu.edu/academics/doctoral/admissions" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$100</span> <a class="src-link" href="https://www.cs.cmu.edu/academics/graduate-admissions" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Shown in the online application. The department itself cannot issue one.</span> <a class="src-link" href="https://csd.cmu.edu/academics/doctoral/admissions" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$100</span> <a class="src-link" href="https://www.cs.cmu.edu/academics/graduate-admissions" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span>Optional, explicitly not a disadvantage. GRE at Home not accepted.</span> <a class="src-link" href="https://csd.cmu.edu/academics/doctoral/admissions" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span>Admitted applicants scored TOEFL iBT 105-114, IELTS 7-8, Duolingo 130-155. No waivers for non-native speakers.</span> <a class="src-link" href="https://www.cs.cmu.edu/academics/graduate-admissions" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://csd.cmu.edu/academics/doctoral/admissions" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">No on-campus graduate housing offered</span> <a class="src-link" href="https://www.cmu.edu/housing/apply-for-housing/index.html" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span>University student health insurance is included in the PhD support package</span> <a class="src-link" href="https://csd.cmu.edu/academics/doctoral/admissions" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Optional</span> <a class="src-link" href="https://www.cmu.edu/health-services/student-insurance/payment.html" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -443,19 +583,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n0u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n0u" data-status="confirmed">
-            <td colspan="15">The clearest page of the whole set. Deadline, the 15:00 cutoff and the GRE policy are all stated for this cycle.<span class="src">row source: <a href="https://csd.cmu.edu/academics/doctoral/admissions" target="_blank" rel="noopener">https://csd.cmu.edu/academics/doctoral/admissions</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">The clearest page of the whole set. Deadline, the 15:00 cutoff and the GRE policy are all stated for this cycle.<span class="src">row source: <a href="https://csd.cmu.edu/academics/doctoral/admissions" target="_blank" rel="noopener">https://csd.cmu.edu/academics/doctoral/admissions</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="carried" data-checked="2026-09-16" data-uni="carnegie mellon">
             <th scope="row" class="col-uni"><span class="uni">Carnegie Mellon</span><a class="prov prov-carried" href="https://ml.cmu.edu/academics/machine-learning-phd" target="_blank" rel="noopener" title="Not confirmed for Fall 2027. The page shows the previous cycle or states no year. Checked 2026-09-16.">unconfirmed</a></th>
             <td data-label="Program"><span>PhD in Machine Learning</span> <a class="src-link" href="https://ml.cmu.edu/academics/machine-learning-phd" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">19 Nov / 10 Dec</span> <a class="src-link" href="https://ml.cmu.edu/academics/machine-learning-phd" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$100</span> <a class="src-link" href="https://www.cs.cmu.edu/academics/graduate-admissions" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Same SCS process as the CS row</span> <a class="src-link" href="https://www.cs.cmu.edu/academics/graduate-admissions" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$100</span> <a class="src-link" href="https://www.cs.cmu.edu/academics/graduate-admissions" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span class="muted">not checked</span></td>
             <td data-label="English"><span>TOEFL or IELTS per SCS policy</span> <a class="src-link" href="https://www.cs.cmu.edu/academics/graduate-admissions" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://ml.cmu.edu/academics/machine-learning-phd" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Apply separately through CMU housing</span> <a class="src-link" href="https://www.cmu.edu/housing/apply-for-housing/index.html" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span class="muted">not checked</span></td>
             <td data-label="Dental &amp; vision"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Optional</span> <a class="src-link" href="https://www.cmu.edu/health-services/student-insurance/payment.html" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -463,19 +602,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n1u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n1u" data-status="carried">
-            <td colspan="15">MLD runs a two-stage deadline. These dates are last cycle and must be re-checked before November.<span class="src">row source: <a href="https://ml.cmu.edu/academics/machine-learning-phd" target="_blank" rel="noopener">https://ml.cmu.edu/academics/machine-learning-phd</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">MLD runs a two-stage deadline. These dates are last cycle and must be re-checked before November.<span class="src">row source: <a href="https://ml.cmu.edu/academics/machine-learning-phd" target="_blank" rel="noopener">https://ml.cmu.edu/academics/machine-learning-phd</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="confirmed" data-checked="2026-09-16" data-uni="mit">
             <th scope="row" class="col-uni"><span class="uni">MIT</span><a class="prov prov-confirmed" href="https://www.eecs.mit.edu/academics/graduate-programs/admission-process/" target="_blank" rel="noopener" title="The Fall 2027 call is published and this row reflects it. Checked 2026-09-16.">2027 call</a></th>
             <td data-label="Program"><span>PhD/ScD in EECS</span> <a class="src-link" href="https://www.eecs.mit.edu/academics/graduate-programs/admission-process/" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline">1 Dec 2026</span> <a class="src-link" href="https://www.eecs.mit.edu/academics/graduate-programs/admission-process/" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="unofficial" title="Unofficial source. This number is not published by the university itself, so treat it as an estimate.">Roughly 3% to 6% across MIT PhD programs. EECS reported over 4,400 applications for the 2025 cycle.</span> <a class="src-link" href="https://admit-lab.com/blog/mit-phd-acceptance/" target="_blank" rel="noopener" aria-label="source for Acceptance rate">&#8599;</a></td>
-            <td data-label="Fee"><span>$90</span> <a class="src-link" href="https://oge.mit.edu/apply/" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Handled by the Office of Graduate Education, not by EECS</span> <a class="src-link" href="https://oge.mit.edu/apply/" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span>$90</span> <a class="src-link" href="https://oge.mit.edu/apply/" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span>Not required</span> <a class="src-link" href="https://www.eecs.mit.edu/academics/graduate-programs/admission-process/graduate-admissions-faqs/" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span>TOEFL iBT 100 or IELTS 7.0. IELTS preferred. Waiver possible under conditions.</span> <a class="src-link" href="https://oge.mit.edu/graduate-admissions/admissions-policies/elp-test-requirement/" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://www.eecs.mit.edu/academics/graduate-programs/funding/" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span>$4,269 a month, $51,226 over 12 months, RA rate</span> <a class="src-link" href="https://oge.mit.edu/finances-employment/stipend-rates/" target="_blank" rel="noopener" aria-label="source for Stipend">&#8599;</a></td>
+            <td data-label="Pay"><span>$4,269 a month, $51,226 over 12 months, RA rate</span> <a class="src-link" href="https://oge.mit.edu/finances-employment/stipend-rates/" target="_blank" rel="noopener" aria-label="source for Pay">&#8599;</a></td>
             <td data-label="Housing"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Graduate housing, apply separately</span> <a class="src-link" href="https://graduatehousing.mit.edu/" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Included only in the working quarters</span> <a class="src-link" href="https://oge.mit.edu/finances-employment/graduate-student-benefits/" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Mostly covered, opt in. Gap if the fellowship or RA/TA does not cover summer.</span> <a class="src-link" href="https://oge.mit.edu/finances-employment/graduate-student-benefits/" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -483,19 +621,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n2u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n2u" data-status="confirmed">
-            <td colspan="15">EECS states the deadline plainly. The fee and test minimums come from the MIT Office of Graduate Education pages rather than the EECS page.<span class="src">row source: <a href="https://www.eecs.mit.edu/academics/graduate-programs/admission-process/" target="_blank" rel="noopener">https://www.eecs.mit.edu/academics/graduate-programs/admission-process/</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">EECS states the deadline plainly. The fee and test minimums come from the MIT Office of Graduate Education pages rather than the EECS page.<span class="src">row source: <a href="https://www.eecs.mit.edu/academics/graduate-programs/admission-process/" target="_blank" rel="noopener">https://www.eecs.mit.edu/academics/graduate-programs/admission-process/</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="confirmed" data-checked="2026-09-16" data-uni="stanford">
             <th scope="row" class="col-uni"><span class="uni">Stanford</span><a class="prov prov-confirmed" href="https://www.cs.stanford.edu/admissions" target="_blank" rel="noopener" title="The Fall 2027 call is published and this row reflects it. Checked 2026-09-16.">2027 call</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://www.cs.stanford.edu/admissions" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline">1 Dec 2026</span> <a class="src-link" href="https://www.cs.stanford.edu/admissions" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$125</span> <a class="src-link" href="https://gradadmissions.stanford.edu/apply/application-fee" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Need based, through Stanford graduate admissions. Read the eligibility rules as an international applicant.</span> <a class="src-link" href="https://gradadmissions.stanford.edu/apply/application-fee" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$125</span> <a class="src-link" href="https://gradadmissions.stanford.edu/apply/application-fee" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span>Not required</span> <a class="src-link" href="https://www.cs.stanford.edu/admissions/phd-admissions-frequently-asked-questions" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span>TOEFL or IELTS required for international applicants</span> <a class="src-link" href="https://gradadmissions.stanford.edu/apply/test-scores" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://www.cs.stanford.edu/phd-program-overview/funding" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Graduate housing options</span> <a class="src-link" href="https://rde.stanford.edu/studenthousing/graduate-housing-options" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Only covered in the working quarters</span> <a class="src-link" href="https://financialaid.stanford.edu/grad/funding/programs/subsidy.html" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Complicated. See the subsidy programme.</span> <a class="src-link" href="https://financialaid.stanford.edu/grad/funding/programs/subsidy.html" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -503,19 +640,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n3u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n3u" data-status="confirmed">
-            <td colspan="15">The application opens in October 2026 and closes 1 December 2026 for Autumn 2027 entry.<span class="src">row source: <a href="https://www.cs.stanford.edu/admissions" target="_blank" rel="noopener">https://www.cs.stanford.edu/admissions</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">The application opens in October 2026 and closes 1 December 2026 for Autumn 2027 entry.<span class="src">row source: <a href="https://www.cs.stanford.edu/admissions" target="_blank" rel="noopener">https://www.cs.stanford.edu/admissions</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="confirmed" data-checked="2026-09-16" data-uni="uc berkeley">
             <th scope="row" class="col-uni"><span class="uni">UC Berkeley</span><a class="prov prov-confirmed" href="https://eecs.berkeley.edu/academics/graduate/research-programs/admissions/" target="_blank" rel="noopener" title="The Fall 2027 call is published and this row reflects it. Checked 2026-09-16.">2027 call</a></th>
             <td data-label="Program"><span>PhD in EECS</span> <a class="src-link" href="https://eecs.berkeley.edu/academics/graduate/research-programs/admissions/" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline">1 Dec 2026</span> <a class="src-link" href="https://grad.berkeley.edu/program/eecs-electrical-engineering-and-computer-sciences-phd/" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span>$155</span> <a class="src-link" href="https://grad.berkeley.edu/admissions/application-process/requirements/" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Need based and in practice restricted to US citizens and permanent residents</span> <a class="src-link" href="https://grad.berkeley.edu/admissions/application-process/requirements/" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span>$155</span> <a class="src-link" href="https://grad.berkeley.edu/admissions/application-process/requirements/" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span>Not required</span> <a class="src-link" href="https://grad.berkeley.edu/program/eecs-electrical-engineering-and-computer-sciences-phd/" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">IELTS 7.0 overall</span> <a class="src-link" href="https://grad.berkeley.edu/admissions/application-process/requirements/" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://eecs.berkeley.edu/academics/graduate/research-programs/admissions/" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Graduate housing options</span> <a class="src-link" href="https://housing.berkeley.edu/explore-housing-options/housing-by-user-type/graduate-students/" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Not included. SHIP must be paid.</span> <a class="src-link" href="https://uhs.berkeley.edu/ship" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Included in SHIP</span> <a class="src-link" href="https://uhs.berkeley.edu/ship" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -523,19 +659,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n4u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n4u" data-status="confirmed">
-            <td colspan="15">The application reopened in September 2026. The most expensive fee in this table, and the waiver is realistically out of reach for a non-resident.<span class="src">row source: <a href="https://eecs.berkeley.edu/academics/graduate/research-programs/admissions/" target="_blank" rel="noopener">https://eecs.berkeley.edu/academics/graduate/research-programs/admissions/</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">The application reopened in September 2026. The most expensive application fee in this table.<span class="src">row source: <a href="https://eecs.berkeley.edu/academics/graduate/research-programs/admissions/" target="_blank" rel="noopener">https://eecs.berkeley.edu/academics/graduate/research-programs/admissions/</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="carried" data-checked="2026-09-16" data-uni="cornell">
             <th scope="row" class="col-uni"><span class="uni">Cornell</span><a class="prov prov-carried" href="https://www.cs.cornell.edu/phd/admissions" target="_blank" rel="noopener" title="Not confirmed for Fall 2027. The page shows the previous cycle or states no year. Checked 2026-09-16.">unconfirmed</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://www.cs.cornell.edu/phd/admissions" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">15 Dec, per the Fall 2026 call</span> <a class="src-link" href="https://www.cs.cornell.edu/phd/admissions" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$105</span> <a class="src-link" href="https://gradschool.cornell.edu/admissions/apply/application-fees-and-waivers/" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Graduate school waivers exist but are narrow for international applicants</span> <a class="src-link" href="https://gradschool.cornell.edu/admissions/apply/application-fees-and-waivers/" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$105</span> <a class="src-link" href="https://gradschool.cornell.edu/admissions/apply/application-fees-and-waivers/" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span>Not listed as required</span> <a class="src-link" href="https://www.cs.cornell.edu/phd/admissions" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">IELTS 7.0 overall, 8.0 recommended in speaking</span> <a class="src-link" href="https://gradschool.cornell.edu/admissions/application-steps/required-tests/english-language-proficiency-requirement-2/" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://www.cs.cornell.edu/phd-computer-science/apply" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span>$36,684 for 9 months, $48,912 for 12 months, 2026-27</span> <a class="src-link" href="https://gradschool.cornell.edu/financial-support/stipend-rates/" target="_blank" rel="noopener" aria-label="source for Stipend">&#8599;</a></td>
+            <td data-label="Pay"><span>$36,684 for 9 months, $48,912 for 12 months, 2026-27</span> <a class="src-link" href="https://gradschool.cornell.edu/financial-support/stipend-rates/" target="_blank" rel="noopener" aria-label="source for Pay">&#8599;</a></td>
             <td data-label="Housing"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Graduate and professional campus housing</span> <a class="src-link" href="https://scl.cornell.edu/residential-life/housing/campus-housing/graduate-professional-student-campus-housing" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Included</span> <a class="src-link" href="https://gradschool.cornell.edu/policies/health-insurance/" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Optional</span> <a class="src-link" href="https://gradschool.cornell.edu/policies/health-insurance/" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -543,19 +678,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n5u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n5u" data-status="carried">
-            <td colspan="15">Checked on 16 September 2026 and the page still read &quot;the deadline for the Fall 2026 semester is December 15th&quot;. That is last cycle. Treat 15 December 2026 as likely but unconfirmed.<span class="src">row source: <a href="https://www.cs.cornell.edu/phd/admissions" target="_blank" rel="noopener">https://www.cs.cornell.edu/phd/admissions</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">Checked on 16 September 2026 and the page still read &quot;the deadline for the Fall 2026 semester is December 15th&quot;. That is last cycle. Treat 15 December 2026 as likely but unconfirmed.<span class="src">row source: <a href="https://www.cs.cornell.edu/phd/admissions" target="_blank" rel="noopener">https://www.cs.cornell.edu/phd/admissions</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="carried" data-checked="2026-09-16" data-uni="u washington">
             <th scope="row" class="col-uni"><span class="uni">U Washington</span><a class="prov prov-carried" href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/how-apply/" target="_blank" rel="noopener" title="Not confirmed for Fall 2027. The page shows the previous cycle or states no year. Checked 2026-09-16.">unconfirmed</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/how-apply/" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">15 Dec, 23:59 PT</span> <a class="src-link" href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/how-apply/" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span>About 5%. Over 3,000 applications, 150 offers, 2023.</span> <a class="src-link" href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/faq/" target="_blank" rel="noopener" aria-label="source for Acceptance rate">&#8599;</a></td>
-            <td data-label="Fee"><span class="muted">not checked</span></td>
-            <td data-label="Fee waiver"><span>Graduate School waivers go to US residents with demonstrated financial need, so not open to international applicants</span> <a class="src-link" href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/faq/" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span class="muted">not checked</span></td>
             <td data-label="GRE"><span>Not required and not accepted. Scores are not reviewed even if sent.</span> <a class="src-link" href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/faq/" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span>Required for non-native speakers, set by the Graduate School</span> <a class="src-link" href="https://grad.uw.edu/policies/3-2-graduate-school-english-language-proficiency-requirements/" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/faq/" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span>Graduate student apartments, applied for separately</span> <a class="src-link" href="https://hfs.uw.edu/live/graduates/" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span>GAIP, paid by UW for eligible appointees, covering medical, dental and vision</span> <a class="src-link" href="https://hr.uw.edu/benefits/insurance/health/graduate-appointees/" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span>Included in GAIP at no cost for eligible appointees</span> <a class="src-link" href="https://hr.uw.edu/benefits/insurance/health/graduate-appointees-options/gaip-eligibility-coverage-overview/" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -563,19 +697,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n6u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n6u" data-status="carried">
-            <td colspan="15">The Allen School writes the deadline as a recurring rule without naming the entry year, so it is marked unconfirmed. The GRE position is unusually strong: scores are not merely optional, they are not looked at.<span class="src">row source: <a href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/how-apply/" target="_blank" rel="noopener">https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/how-apply/</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">The Allen School writes the deadline as a recurring rule without naming the entry year, so it is marked unconfirmed. The GRE position is unusually strong: scores are not merely optional, they are not looked at.<span class="src">row source: <a href="https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/how-apply/" target="_blank" rel="noopener">https://www.cs.washington.edu/academics/graduate/phd-program/phd-admissions/how-apply/</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="confirmed" data-checked="2026-09-16" data-uni="princeton">
             <th scope="row" class="col-uni"><span class="uni">Princeton</span><a class="prov prov-confirmed" href="https://www.cs.princeton.edu/grad/admissions-requirements" target="_blank" rel="noopener" title="The Fall 2027 call is published and this row reflects it. Checked 2026-09-16.">2027 call</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://www.cs.princeton.edu/grad/admissions-requirements" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline">15 Dec 2026</span> <a class="src-link" href="https://gradschool.princeton.edu/admission-onboarding/prepare/deadlines-and-fees" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span>$90</span> <a class="src-link" href="https://gradschool.princeton.edu/admission-onboarding/prepare/deadlines-and-fees" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Operated by the Graduate School</span> <a class="src-link" href="https://gradschool.princeton.edu/admission-onboarding/prepare/deadlines-and-fees" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span>$90</span> <a class="src-link" href="https://gradschool.princeton.edu/admission-onboarding/prepare/deadlines-and-fees" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span>Not accepted</span> <a class="src-link" href="https://www.cs.princeton.edu/grad/admissions-requirements" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span>TOEFL, IELTS or Duolingo. Admitted students averaged TOEFL iBT 108.</span> <a class="src-link" href="https://www.cs.princeton.edu/grad/admissions-requirements" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://www.cs.princeton.edu/grad/faq" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span>$48,510, 10 month TA rate, 2026-27</span> <a class="src-link" href="https://gradschool.princeton.edu/student-experience/student-support-glance" target="_blank" rel="noopener" aria-label="source for Stipend">&#8599;</a></td>
+            <td data-label="Pay"><span>$48,510, 10 month TA rate, 2026-27</span> <a class="src-link" href="https://gradschool.princeton.edu/student-experience/student-support-glance" target="_blank" rel="noopener" aria-label="source for Pay">&#8599;</a></td>
             <td data-label="Housing"><span>University housing offered to incoming students. Over 70% of graduate students live on campus.</span> <a class="src-link" href="https://hres.princeton.edu/graduate-housing" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span>Automatically enrolled in the Student Health Plan. Graduate students cannot waive it.</span> <a class="src-link" href="https://shp.uhs.princeton.edu/student-insurance-plans" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span>Supplemental dental and vision available as add-ons</span> <a class="src-link" href="https://shp.uhs.princeton.edu/student-insurance-plans" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -583,19 +716,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n7u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n7u" data-status="confirmed">
-            <td colspan="15">Explicitly stated as Fall 2027 admission. One of the few that publishes the admitted-student average TOEFL, which is more useful than a minimum.<span class="src">row source: <a href="https://www.cs.princeton.edu/grad/admissions-requirements" target="_blank" rel="noopener">https://www.cs.princeton.edu/grad/admissions-requirements</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">Explicitly stated as Fall 2027 admission. One of the few that publishes the admitted-student average TOEFL, which is more useful than a minimum.<span class="src">row source: <a href="https://www.cs.princeton.edu/grad/admissions-requirements" target="_blank" rel="noopener">https://www.cs.princeton.edu/grad/admissions-requirements</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="confirmed" data-checked="2026-09-16" data-uni="uiuc">
             <th scope="row" class="col-uni"><span class="uni">UIUC</span><a class="prov prov-confirmed" href="https://siebelschool.illinois.edu/admissions/graduate/application-deadlines" target="_blank" rel="noopener" title="The Fall 2027 call is published and this row reflects it. Checked 2026-09-16.">2027 call</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://siebelschool.illinois.edu/admissions/graduate/applications-process-requirements" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline">1 Dec 2026</span> <a class="src-link" href="https://siebelschool.illinois.edu/admissions/graduate/application-deadlines" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span>$90 for international applicants</span> <a class="src-link" href="https://siebelschool.illinois.edu/admissions/graduate/applications-process-requirements" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Graduate College process</span> <a class="src-link" href="https://siebelschool.illinois.edu/admissions/graduate/applications-process-requirements" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span>$90 for international applicants</span> <a class="src-link" href="https://siebelschool.illinois.edu/admissions/graduate/applications-process-requirements" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span>No longer required</span> <a class="src-link" href="https://siebelschool.illinois.edu/admissions/graduate/applications-process-requirements" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span>TOEFL or IELTS for non-native speakers</span> <a class="src-link" href="https://siebelschool.illinois.edu/admissions/graduate/applications-process-requirements" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://siebelschool.illinois.edu/admissions/graduate/applications-process-requirements" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span>University Housing apartment communities</span> <a class="src-link" href="https://housing.illinois.edu/" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span>Student health insurance, plus the health service fee covering McKinley</span> <a class="src-link" href="https://si.illinois.edu/" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span>Dental and vision are separate voluntary plans with their own fees</span> <a class="src-link" href="https://si.illinois.edu/" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -603,19 +735,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n8u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n8u" data-status="confirmed">
-            <td colspan="15">Now the Siebel School of Computing and Data Science. Closes 1 December 2026 for Fall 2027.<span class="src">row source: <a href="https://siebelschool.illinois.edu/admissions/graduate/application-deadlines" target="_blank" rel="noopener">https://siebelschool.illinois.edu/admissions/graduate/application-deadlines</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">Now the Siebel School of Computing and Data Science. Closes 1 December 2026 for Fall 2027.<span class="src">row source: <a href="https://siebelschool.illinois.edu/admissions/graduate/application-deadlines" target="_blank" rel="noopener">https://siebelschool.illinois.edu/admissions/graduate/application-deadlines</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="carried" data-checked="2026-09-16" data-uni="georgia tech">
             <th scope="row" class="col-uni"><span class="uni">Georgia Tech</span><a class="prov prov-carried" href="https://www.cc.gatech.edu/phd-cs-admissions-requirements" target="_blank" rel="noopener" title="Not confirmed for Fall 2027. The page shows the previous cycle or states no year. Checked 2026-09-16.">unconfirmed</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://www.cc.gatech.edu/degree-programs/phd-computer-science" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">15 Dec</span> <a class="src-link" href="https://www.cc.gatech.edu/phd-cs-admissions-requirements" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$105 international</span> <a class="src-link" href="https://www.cc.gatech.edu/phd-cs-admissions-requirements" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span class="muted">not checked</span></td>
+            <td data-label="Application fee"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">$105 international</span> <a class="src-link" href="https://www.cc.gatech.edu/phd-cs-admissions-requirements" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span class="muted">not checked</span></td>
             <td data-label="English"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">IELTS 7.0 overall, 5.5 minimum writing, 6.5 minimum in the others</span> <a class="src-link" href="https://grad.gatech.edu/english-proficiency" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://www.cc.gatech.edu/funding-sources" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Graduate housing</span> <a class="src-link" href="https://housing.gatech.edu/" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">You pay 25% on an assistantship</span> <a class="src-link" href="https://health.gatech.edu/student-health-insurance/" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span class="muted">not checked</span></td>
@@ -623,19 +754,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n9u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n9u" data-status="carried">
-            <td colspan="15">The 25% student share of the health premium on an assistantship is one of the less generous arrangements in this table.<span class="src">row source: <a href="https://www.cc.gatech.edu/phd-cs-admissions-requirements" target="_blank" rel="noopener">https://www.cc.gatech.edu/phd-cs-admissions-requirements</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">The 25% student share of the health premium on an assistantship is one of the less generous arrangements in this table.<span class="src">row source: <a href="https://www.cc.gatech.edu/phd-cs-admissions-requirements" target="_blank" rel="noopener">https://www.cc.gatech.edu/phd-cs-admissions-requirements</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="carried" data-checked="2026-09-16" data-uni="ut austin">
             <th scope="row" class="col-uni"><span class="uni">UT Austin</span><a class="prov prov-carried" href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener" title="Not confirmed for Fall 2027. The page shows the previous cycle or states no year. Checked 2026-09-16.">unconfirmed</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">15 Dec, 23:59 CST</span> <a class="src-link" href="https://www.cs.utexas.edu/faq/632" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span>$90 for international applicants</span> <a class="src-link" href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Requires US citizenship or permanent residency, so it is not open to international applicants</span> <a class="src-link" href="https://gradschool.utexas.edu/admissions/how-to-apply" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span>$90 for international applicants</span> <a class="src-link" href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span>Optional</span> <a class="src-link" href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span>TOEFL or IELTS for non-native speakers</span> <a class="src-link" href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span class="muted">not checked</span></td>
             <td data-label="Health"><span>AcademicBlue SHIP. A benefits-eligible TA or GRA appointment comes with staff insurance.</span> <a class="src-link" href="https://graduate.utexas.edu/grad-life/health-wellness/insurance" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span>Dental and vision are separate options depending on employee, fellow or self-funded status</span> <a class="src-link" href="https://graduate.utexas.edu/grad-life/health-wellness/insurance" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -643,19 +773,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n10u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n10u" data-status="carried">
-            <td colspan="15">Letters of recommendation are accepted a few days after the application deadline, until 20 December 17:00 CST, which buys time if a referee is slow.<span class="src">row source: <a href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener">https://www.cs.utexas.edu/graduate/apply</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">Letters of recommendation are accepted a few days after the application deadline, until 20 December 17:00 CST, which buys time if a referee is slow.<span class="src">row source: <a href="https://www.cs.utexas.edu/graduate/apply" target="_blank" rel="noopener">https://www.cs.utexas.edu/graduate/apply</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="confirmed" data-checked="2026-09-16" data-uni="uc san diego">
             <th scope="row" class="col-uni"><span class="uni">UC San Diego</span><a class="prov prov-confirmed" href="https://cse.ucsd.edu/graduate/admissions" target="_blank" rel="noopener" title="The Fall 2027 call is published and this row reflects it. Checked 2026-09-16.">2027 call</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://cse.ucsd.edu/graduate/admissions" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline">16 Dec 2026</span> <a class="src-link" href="https://cse.ucsd.edu/graduate/admissions" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span class="muted">not checked</span></td>
-            <td data-label="Fee waiver"><span>The CSE department offers a limited number of fee waivers specifically for international PhD applicants</span> <a class="src-link" href="https://cse.ucsd.edu/graduate/admissions" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span class="muted">not checked</span></td>
             <td data-label="GRE"><span>Not required for PhD or MS for Fall 2027. Scores may still be submitted.</span> <a class="src-link" href="https://cse.ucsd.edu/graduate/admissions" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">IELTS 7.0 overall. Duolingo accepted.</span> <a class="src-link" href="https://cse.ucsd.edu/graduate/admissions" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://cse.ucsd.edu/graduate/fellowships-and-scholarships-graduate-students" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Graduate and family housing</span> <a class="src-link" href="https://hdhgradfamilyhousing.ucsd.edu/" target="_blank" rel="noopener" aria-label="source for Housing">&#8599;</a></td>
             <td data-label="Health"><span>UC SHIP, automatic enrolment, covering medical, dental and vision</span> <a class="src-link" href="https://shwadmin.ucsd.edu/uc-ship/index.html" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span>Included in UC SHIP</span> <a class="src-link" href="https://shwadmin.ucsd.edu/uc-ship/index.html" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -663,19 +792,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n11u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n11u" data-status="confirmed">
-            <td colspan="15">Worth singling out: the CSE department runs a limited number of application fee waivers aimed at international PhD applicants, which is unusual. Most US waivers are closed to us. One of the earliest to publish: the application opened on 2 September 2026 and closes 16 December 2026 for Fall 2027.<span class="src">row source: <a href="https://cse.ucsd.edu/graduate/admissions" target="_blank" rel="noopener">https://cse.ucsd.edu/graduate/admissions</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">One of the earliest to publish: the application opened on 2 September 2026 and closes 16 December 2026 for Fall 2027.<span class="src">row source: <a href="https://cse.ucsd.edu/graduate/admissions" target="_blank" rel="noopener">https://cse.ucsd.edu/graduate/admissions</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="carried" data-checked="2026-09-16" data-uni="ucla">
             <th scope="row" class="col-uni"><span class="uni">UCLA</span><a class="prov prov-carried" href="https://www.cs.ucla.edu/graduate-requirements/" target="_blank" rel="noopener" title="Not confirmed for Fall 2027. The page shows the previous cycle or states no year. Checked 2026-09-16.">unconfirmed</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://www.cs.ucla.edu/graduate-requirements/" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">15 Dec, 23:59 PT</span> <a class="src-link" href="https://www.cs.ucla.edu/graduate-requirements/" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span>5.2%. 906 PhD applicants and 47 admitted, Fall 2022.</span> <a class="src-link" href="https://www.cs.ucla.edu/graduate-admission-frequently-asked-questions/" target="_blank" rel="noopener" aria-label="source for Acceptance rate">&#8599;</a></td>
-            <td data-label="Fee"><span>$155 for international applicants</span> <a class="src-link" href="https://www.cs.ucla.edu/graduate-requirements/" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Need based, US citizens and permanent residents in practice</span> <a class="src-link" href="https://www.cs.ucla.edu/graduate-admission-frequently-asked-questions/" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span>$155 for international applicants</span> <a class="src-link" href="https://www.cs.ucla.edu/graduate-requirements/" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span class="stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">Was not required in the previous cycle. Re-check for Fall 2027.</span> <a class="src-link" href="https://www.cs.ucla.edu/graduate-requirements/" target="_blank" rel="noopener" aria-label="source for GRE">&#8599;</a></td>
             <td data-label="English"><span>TOEFL iBT 87 or IELTS 7.0, taken within the last two years</span> <a class="src-link" href="https://grad.ucla.edu/gasaa/admissions/ENGREQ.HTM" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Yes</span> <a class="src-link" href="https://www.cs.ucla.edu/graduate-admission-frequently-asked-questions/" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span class="muted">not checked</span></td>
+            <td data-label="Pay"><span class="muted">not checked</span></td>
             <td data-label="Housing"><span class="muted">not checked</span></td>
             <td data-label="Health"><span>UC SHIP, automatic enrolment, cost included in registration fees</span> <a class="src-link" href="https://www.studenthealth.ucla.edu/" target="_blank" rel="noopener" aria-label="source for Health">&#8599;</a></td>
             <td data-label="Dental &amp; vision"><span>Delta Dental PPO and Anthem vision, through UC SHIP</span> <a class="src-link" href="https://www.studenthealth.ucla.edu/" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -683,19 +811,18 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n12u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n12u" data-status="carried">
-            <td colspan="15">The two-year validity window on the English test is the thing to watch: a test sat in early 2025 may expire before a December 2026 submission.<span class="src">row source: <a href="https://www.cs.ucla.edu/graduate-requirements/" target="_blank" rel="noopener">https://www.cs.ucla.edu/graduate-requirements/</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">The two-year validity window on the English test is the thing to watch: a test sat in early 2025 may expire before a December 2026 submission.<span class="src">row source: <a href="https://www.cs.ucla.edu/graduate-requirements/" target="_blank" rel="noopener">https://www.cs.ucla.edu/graduate-requirements/</a> &middot; checked 2026-09-16</span></td>
           </tr>
           <tr data-status="carried" data-checked="2026-09-16" data-uni="ttic">
             <th scope="row" class="col-uni"><span class="uni">TTIC</span><a class="prov prov-carried" href="https://www.ttic.edu/studentapplication/" target="_blank" rel="noopener" title="Not confirmed for Fall 2027. The page shows the previous cycle or states no year. Checked 2026-09-16.">unconfirmed</a></th>
             <td data-label="Program"><span>PhD in Computer Science</span> <a class="src-link" href="https://www.ttic.edu/phd-program/" target="_blank" rel="noopener" aria-label="source for Program">&#8599;</a></td>
             <td data-label="Deadline"><span class="deadline stale" title="From my own Fall 2026 spreadsheet, not re-verified against the page today.">9 Dec for full consideration. Window 7 Oct to 15 Jan.</span> <a class="src-link" href="https://www.ttic.edu/studentapplication/" target="_blank" rel="noopener" aria-label="source for deadline">&#8599;</a><span class="checked">checked 2026-09-16</span></td>
             <td data-label="Acceptance rate"><span class="muted">not checked</span></td>
-            <td data-label="Fee"><span>None</span> <a class="src-link" href="https://www.ttic.edu/studentapplication/" target="_blank" rel="noopener" aria-label="source for Fee">&#8599;</a></td>
-            <td data-label="Fee waiver"><span>Not applicable, there is no application fee</span> <a class="src-link" href="https://www.ttic.edu/studentapplication/" target="_blank" rel="noopener" aria-label="source for Fee waiver">&#8599;</a></td>
+            <td data-label="Application fee"><span>None</span> <a class="src-link" href="https://www.ttic.edu/studentapplication/" target="_blank" rel="noopener" aria-label="source for Application fee">&#8599;</a></td>
             <td data-label="GRE"><span class="muted">not checked</span></td>
             <td data-label="English"><span>TOEFL or IELTS, unless your degree came from an English-medium school in one of the listed countries</span> <a class="src-link" href="https://www.ttic.edu/studentapplication/" target="_blank" rel="noopener" aria-label="source for English">&#8599;</a></td>
             <td data-label="Funding"><span>Full tuition scholarship at $45,000 a year, plus a monthly living stipend</span> <a class="src-link" href="https://www.ttic.edu/financial-support/" target="_blank" rel="noopener" aria-label="source for Funding">&#8599;</a></td>
-            <td data-label="Stipend"><span>Amount is disclosed in the admission letter, not published. No service required in year one, RA or TA from year two.</span> <a class="src-link" href="https://www.ttic.edu/financial-support/" target="_blank" rel="noopener" aria-label="source for Stipend">&#8599;</a></td>
+            <td data-label="Pay"><span>Amount is disclosed in the admission letter, not published. No service required in year one, RA or TA from year two.</span> <a class="src-link" href="https://www.ttic.edu/financial-support/" target="_blank" rel="noopener" aria-label="source for Pay">&#8599;</a></td>
             <td data-label="Housing"><span class="muted">not checked</span></td>
             <td data-label="Health"><span class="muted">not checked</span></td>
             <td data-label="Dental &amp; vision"><span>Lump sum at the start of the year toward dental, vision and transport</span> <a class="src-link" href="https://www.ttic.edu/financial-support/" target="_blank" rel="noopener" aria-label="source for Dental &amp; vision">&#8599;</a></td>
@@ -703,7 +830,7 @@
             <td data-label="Notes"><button class="notes-toggle" type="button" aria-expanded="true" aria-controls="n13u">notes</button></td>
           </tr>
           <tr class="notes-row" id="n13u" data-status="carried">
-            <td colspan="15">The cheapest application on this page: there is no fee at all, so adding it costs nothing but time. Two things stood out that almost nobody else offers. A $3,500 start-up equipment budget, and student visa fees covered at initial matriculation, which is a direct saving for an international applicant. The 9 December date is stated as a recurring rule without naming the entry year, so it is marked unconfirmed.<span class="src">row source: <a href="https://www.ttic.edu/studentapplication/" target="_blank" rel="noopener">https://www.ttic.edu/studentapplication/</a> &middot; checked 2026-09-16</span></td>
+            <td colspan="14">The cheapest application on this page: there is no fee at all, so adding it costs nothing but time. Two things stood out that almost nobody else offers. A $3,500 start-up equipment budget, and student visa fees covered at initial matriculation, which is a direct saving for an international applicant. The 9 December date is stated as a recurring rule without naming the entry year, so it is marked unconfirmed.<span class="src">row source: <a href="https://www.ttic.edu/studentapplication/" target="_blank" rel="noopener">https://www.ttic.edu/studentapplication/</a> &middot; checked 2026-09-16</span></td>
           </tr>
         </tbody>
       </table>
@@ -723,23 +850,24 @@
 
     <div class="controls">
       <span class="count" id="eu-shown"></span>
+      <a class="glossary-link" href="#glossary">what the columns mean</a>
     </div>
 
     <div class="table-scroll" tabindex="0" role="region" aria-label="Europe programs comparison">
       <table class="cmp" id="eu-table">
         <thead>
           <tr>
-            <th scope="col">University</th>
-            <th scope="col">Program</th>
-            <th scope="col">Deadline</th>
-            <th scope="col">Acceptance rate</th>
-            <th scope="col">Funding model</th>
-            <th scope="col">Pay</th>
-            <th scope="col">Application fee</th>
-            <th scope="col">English</th>
-            <th scope="col">Housing</th>
-            <th scope="col">Health</th>
-            <th scope="col">Links</th>
+            <th scope="col" data-col="university">University</th>
+            <th scope="col" data-col="program">Program</th>
+            <th scope="col" data-col="deadline">Deadline</th>
+            <th scope="col" data-col="acceptance-rate">Acceptance rate</th>
+            <th scope="col" data-col="funding-model">Funding model</th>
+            <th scope="col" data-col="pay">Pay</th>
+            <th scope="col" data-col="application-fee">Application fee</th>
+            <th scope="col" data-col="english">English</th>
+            <th scope="col" data-col="housing">Housing</th>
+            <th scope="col" data-col="health">Health</th>
+            <th scope="col" data-col="links">Links</th>
             <th scope="col"><span class="sr-only">Notes</span></th>
           </tr>
         </thead>
@@ -904,7 +1032,9 @@
   </section>
 
   <section class="wrap prose" id="notes">
-    <div class="section-head"><h2>Timeline</h2><span>autumn 2026 to spring 2027</span></div>
+        <details class="fold" open>
+      <summary><h2>Timeline</h2><span>autumn 2026 to spring 2027</span></summary>
+      <div class="foldbody">
     <ul>
       <li><strong>September 2026.</strong> Shortlist programs. Ask for letters now, not in November. Give each referee a CV, a draft statement, a bullet list of what you did together, and the deadline table.</li>
       <li><strong>October 2026.</strong> Sit IELTS or TOEFL if the score is not already in hand. Most applications open this month. <strong>31 October is the ELLIS deadline</strong>, a full month before anything else, and it needs a two-page motivation letter plus two referees already lined up. Plan backwards from this date, not from December.</li>
@@ -916,50 +1046,46 @@
       <li><strong>Any month.</strong> ETH and KTH sit outside this calendar entirely. Neither runs a central call: you apply to a named professor or to a specific advertised position. KTH posts positions nine times a year, so it is worth checking through the autumn rather than once.</li>
       <li><strong>Spring and summer 2027.</strong> I-20, SEVIS fee, visa interview, then travel.</li>
     </ul>
+      </div>
+    </details>
 
-    <div class="section-head" style="margin-top:44px;"><h2>Funding an Italian can actually get</h2><span>eligibility matters</span></div>
-    <p>The obvious answer is the wrong one. <strong>NSF GRFP is closed to us.</strong> Its eligibility page, checked on 16 September 2026, requires applicants to "be a U.S. citizen, national, or a permanent resident ('green-card' holder)" at the time of submission, and it excludes foreign nationals on student visas. The Hertz Fellowship is similarly restricted.</p>
-    <p>What actually matters for a US CS PhD is that <strong>the department funds you anyway</strong>. Admission normally comes with a guaranteed RA or TA package for the length of the degree, so external fellowships are a bonus and a line on the CV, not the thing that makes the degree possible.</p>
-    <h3>Open to non-US citizens</h3>
-    <ul>
-      <li>Knight-Hennessy Scholars at Stanford, no nationality restriction.</li>
-      <li>Google, Meta, NVIDIA, Apple and Microsoft Research PhD fellowships. Note that most of these are for students <em>already enrolled</em>, so they are a second-year problem, not an application-year one.</li>
-      <li>Fulbright Italy, which runs on its own much earlier calendar.</li>
-      <li>Clarendon at Oxford, no restriction on nationality or field, automatic consideration when you apply by the course funding deadline.</li>
-      <li>Cambridge Trusts. Gates Cambridge also exists, but its earlier October round is for US citizens only.</li>
-      <li>EPFL EDIC fellowships, 55 of them for 2027. IMPRS stipends at Max Planck. ETH doctoral positions are salaried employment.</li>
-    </ul>
-    <div class="callout">
-      <p>This section is held to a lower standard than the tables: eligibility rules change every year and I have not re-read every one of these calls. Verify before you rely on any of it.</p>
-    </div>
-
-    <div class="section-head" style="margin-top:44px;"><h2>Fee waivers, honestly</h2><span>budget for it</span></div>
-    <p>Most US application fee waivers are need based and tied to US citizenship or residency, or routed through programmes such as GEM, McNair and CSGrad4US that require US status. As an Italian applicant, assume you will pay. The realistic exceptions are waivers handed out at conferences such as Grace Hopper, Tapia and CMD-IT.</p>
-    <p>At the fees in the table above, the US applications come to roughly <strong>$1,300</strong>. That is a real number and it should be part of the plan from September, not a surprise in December. One exception worth knowing: <strong>TTIC charges no application fee at all</strong>, and UC San Diego runs a limited number of waivers aimed specifically at international PhD applicants, which is rare.</p>
-
-    <div class="section-head" style="margin-top:44px;"><h2>English tests</h2><span>logistics</span></div>
+    <details class="fold" open>
+      <summary><h2>English tests</h2><span>logistics</span></summary>
+      <div class="foldbody">
     <ul>
       <li><strong>Validity is two years.</strong> A test sat in early 2025 can expire before a December 2026 submission. UCLA states this explicitly.</li>
       <li><strong>IELTS vs TOEFL.</strong> Both are accepted everywhere in this table. MIT states a preference for IELTS. Duolingo is accepted by some (Princeton, UCSD) and not by others, and the number accepting it has fallen since 2023.</li>
       <li><strong>A waiver is unlikely.</strong> An Italian MSc, even one taught in English, usually does not earn an exemption at US schools. MIT's waiver has specific conditions worth reading rather than assuming.</li>
       <li><strong>Score reports take one to two weeks</strong> to reach institutions and cost extra per report. Book the sitting so results land well before 1 December.</li>
     </ul>
+      </div>
+    </details>
 
-    <div class="section-head" style="margin-top:44px;"><h2>Applying from an Italian degree</h2><span>paperwork</span></div>
+    <details class="fold" open>
+      <summary><h2>Applying from an Italian degree</h2><span>paperwork</span></summary>
+      <div class="foldbody">
     <ul>
       <li>Transcripts plus the Diploma Supplement, in English. Order early, Italian administrative offices are slow in the autumn.</li>
       <li>Do not try to convert 110/110 into a US GPA yourself unless a school asks. Report the Italian scale and let them read it. Most systems have a field for this.</li>
       <li>Letters from Italian professors are often shorter and more formal than the US norm. It is worth telling your referees that US committees expect specifics and comparisons, not a character reference.</li>
     </ul>
+      </div>
+    </details>
 
-    <div class="section-head" style="margin-top:44px;"><h2>Visa and permits</h2><span>the most volatile section here</span></div>
+    <details class="fold" open>
+      <summary><h2>Visa and permits</h2><span>the most volatile section here</span></summary>
+      <div class="foldbody">
     <ul>
       <li><strong>USA.</strong> F-1 after the I-20 arrives, then the SEVIS I-901 fee and the DS-160, then an appointment in Milan, Rome, Florence or Naples. Wait times move constantly, so check them rather than trusting any page, including this one. Administrative processing under 221(g) is a genuine possibility in CS and AI fields, so leave slack.</li>
       <li><strong>Switzerland.</strong> A doctorate is employment, so this runs as a B permit through the employer.</li>
       <li><strong>UK.</strong> Several CS research areas require an <strong>ATAS certificate</strong> before the visa, which adds weeks and is easy to miss. Check it early for Oxford, Cambridge and UCL.</li>
     </ul>
+      </div>
+    </details>
 
-    <div class="section-head" style="margin-top:44px;"><h2>Worth reading</h2><span>links</span></div>
+    <details class="fold" open>
+      <summary><h2>Worth reading</h2><span>links</span></summary>
+      <div class="foldbody">
     <div class="contact-grid">
       <a href="https://csrankings.org" target="_blank" rel="noopener"><span class="label">Ranking by output</span><span class="value">CSRankings</span></a>
       <a href="https://www.cs.cmu.edu/~harchol/gradschooltalk.pdf" target="_blank" rel="noopener"><span class="label">Mor Harchol-Balter</span><span class="value">Applying to PhD programs in CS</span></a>
@@ -968,7 +1094,10 @@
       <a href="https://www.reddit.com/r/gradadmissions/" target="_blank" rel="noopener"><span class="label">Community</span><span class="value">r/gradadmissions</span></a>
       <a href="https://matt.might.net/articles/phd-school-in-pictures/" target="_blank" rel="noopener"><span class="label">Perspective</span><span class="value">The illustrated guide to a PhD</span></a>
     </div>
-  </section>
+      </div>
+    </details>
+
+</section>
 
 </main>
 
@@ -1055,6 +1184,152 @@
     document.getElementById('eu-shown').textContent = dataRows(eu).length + ' programs';
     apply();
   })();
+</script>
+
+
+<script>
+/* Column info popovers.
+   The glossary is the single source of truth: the markers read their text
+   from it, so the two can never drift. Progressive enhancement only, with
+   JS off the glossary ships open and the markers never appear. */
+(function () {
+  var glossary = document.getElementById('glossary');
+  if (!glossary) return;
+
+  var defs = {};
+  Array.prototype.forEach.call(glossary.querySelectorAll('[data-col]'), function (row) {
+    var dd = row.querySelector('dd');
+    if (dd) defs[row.getAttribute('data-col')] = dd.textContent.trim();
+  });
+
+  glossary.open = false;   // shipped open for the no-JS case, collapse it now
+
+  var tip = document.createElement('div');
+  tip.id = 'coltip';
+  tip.setAttribute('role', 'tooltip');
+  tip.hidden = true;
+  document.body.appendChild(tip);
+
+  var current = null, showTimer = null, suppressFocus = false;
+
+  function place(trigger) {
+    tip.hidden = false;
+    tip.style.left = '0px';
+    tip.style.top = '-9999px';          // measure before placing
+    var r = trigger.getBoundingClientRect();
+    var t = tip.getBoundingClientRect();
+    var pad = 12;
+    var left = r.left + r.width / 2 - t.width / 2;
+    if (left < pad) left = pad;
+    if (left + t.width > window.innerWidth - pad) left = window.innerWidth - pad - t.width;
+    var top = r.bottom + 8;
+    if (top + t.height > window.innerHeight - pad) top = r.top - t.height - 8;  // flip above
+    if (top < pad) top = pad;
+    tip.style.left = Math.round(left) + 'px';
+    tip.style.top = Math.round(top) + 'px';
+  }
+
+  function show(trigger) {
+    var key = trigger.getAttribute('data-for');
+    if (!defs[key]) return;
+    if (current && current !== trigger) hide();
+    current = trigger;
+    tip.textContent = defs[key];
+    trigger.setAttribute('aria-expanded', 'true');
+    trigger.setAttribute('aria-describedby', 'coltip');
+    place(trigger);
+  }
+
+  function hide() {
+    clearTimeout(showTimer); showTimer = null;
+    if (current) {
+      current.setAttribute('aria-expanded', 'false');
+      current.removeAttribute('aria-describedby');
+      current = null;
+    }
+    tip.hidden = true;
+  }
+
+  var canHover = window.matchMedia('(hover: hover)').matches;
+  var missing = [];
+
+  Array.prototype.forEach.call(
+    document.querySelectorAll('#usa-table thead th[data-col], #eu-table thead th[data-col]'),
+    function (th) {
+      var key = th.getAttribute('data-col');
+      if (!defs[key]) { missing.push(key); return; }
+      var a = document.createElement('a');
+      a.className = 'coltip';
+      a.href = '#gl-' + key;
+      a.setAttribute('data-for', key);
+      a.setAttribute('aria-expanded', 'false');
+      a.setAttribute('aria-label', 'What ' + th.textContent.trim() + ' means');
+      a.textContent = 'i';
+
+      a.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        if (current === a) hide(); else show(a);
+      });
+      a.addEventListener('focus', function () { if (!suppressFocus) show(a); });
+      a.addEventListener('blur', function () { hide(); });
+      if (canHover) {
+        a.addEventListener('mouseenter', function () {
+          clearTimeout(showTimer);
+          showTimer = setTimeout(function () { show(a); }, 80);
+        });
+        a.addEventListener('mouseleave', function () {
+          clearTimeout(showTimer);
+          if (document.activeElement !== a) hide();
+        });
+      }
+      th.appendChild(a);
+    });
+
+  if (missing.length) console.warn('Column keys with no glossary entry:', missing);
+
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key !== 'Escape' || !current) return;
+    var t = current;
+    hide();
+    // restoring focus would otherwise fire the focus handler and reopen it
+    suppressFocus = true;
+    t.focus();
+    setTimeout(function () { suppressFocus = false; }, 0);
+  });
+  document.addEventListener('pointerdown', function (ev) {
+    if (current && !current.contains(ev.target)) hide();
+  });
+  // capture catches scrolling inside .table-scroll as well as the window
+  window.addEventListener('scroll', hide, true);
+  window.addEventListener('resize', hide);
+  window.addEventListener('orientationchange', hide);
+
+  // the glossary links must open it before the browser jumps to the anchor
+  Array.prototype.forEach.call(document.querySelectorAll('.glossary-link, a.coltip'), function (a) {
+    a.addEventListener('click', function () { glossary.open = true; });
+  });
+
+  window.addEventListener('beforeprint', function () { glossary.open = true; });
+
+  // The notes sections ship expanded so the page reads without JavaScript.
+  // Collapse them now, and reopen everything for printing.
+  var folds = document.querySelectorAll('details.fold');
+  Array.prototype.forEach.call(folds, function (d) { d.open = false; });
+  window.addEventListener('beforeprint', function () {
+    Array.prototype.forEach.call(folds, function (d) { d.open = true; });
+  });
+
+  // a link to #notes or to a section should open what it points at
+  window.addEventListener('hashchange', openTarget);
+  function openTarget() {
+    var el = document.getElementById(location.hash.slice(1));
+    while (el) {
+      if (el.tagName === 'DETAILS') el.open = true;
+      el = el.parentElement;
+    }
+  }
+  openTarget();
+})();
 </script>
 
 </body>
