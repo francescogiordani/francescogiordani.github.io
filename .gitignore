@@ -3,3 +3,4 @@ professors.html
 devserve.py
 professors-data.json
 .professors-backups/
+.vscode/
